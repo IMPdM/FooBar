@@ -20,3 +20,5 @@ all = run_query(engine, EOLAttachmentBody(plant), params)
 matej(all)
 
 # Tukaj potem kličeva alarmiranje v grafani
+
+#zmenjeno

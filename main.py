@@ -1,6 +1,5 @@
-from db.queries.Sunstone.EOLAttachmentBody import EOLAttachmentBody
-
-from algo.matej import matej
+from db.queries.Sunstone.EOLAttachmentBody import EOLAttachmentBodyForTrain
+from algo.models.threshold_predictor import predict_threshold, THRESHOLD
 
 from utils.time import DateWindow
 from utils.plants import Plants
@@ -8,17 +7,39 @@ from utils.plants import Plants
 from db.run_query import run_query
 from db.connection import get_engine
 
-engine = get_engine()
+def main():
+    engine = get_engine()
 
-plant = Plants().get_plant("Sunstone_EOL_Att_Body")
+    plant = Plants().get_plant("Sunstone_EOL_Att_Body")
 
-params = {}
-params.update(DateWindow.today())
+    window = DateWindow.today()
+    start = window["start_time"]
+    end = window["end_time"]
 
-all = run_query(engine, EOLAttachmentBody(plant), params)
+    query = EOLAttachmentBodyForTrain(plant)
+    df = run_query(engine, query, params=(start, end))
+    print(df[-10:])
 
-matej(all)
+    mean_slope = 0.0001007
 
-# Tukaj potem kličeva alarmiranje v grafani
+    # --------------------------------------------------
+    # 2) pokliči naš novi algoritem
+    # --------------------------------------------------
+    prediction = predict_threshold(
+        df=df,
+        slope_per_sample=mean_slope,
+        threshold=THRESHOLD,
+    )
 
-#zmenjeno
+    print("=== Threshold prediction ===")
+    print(f"Mode: {prediction.mode}")
+    print(f"Last value: {prediction.last_value}")
+    print(f"Line stopped: {prediction.line_stopped}")
+    print(f"Samples to threshold (float): {prediction.samples_to_threshold}")
+    print(f"Samples to threshold (ceil): {prediction.samples_to_threshold_ceil}")
+    print(f"Time to threshold: {prediction.time_to_threshold}")
+    print(f"Avg interval: {prediction.avg_interval}")
+
+
+if __name__ == "__main__":
+    main()

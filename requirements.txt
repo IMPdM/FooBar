@@ -1,0 +1,10 @@
+pandas
+numpy
+scipy
+sqlalchemy
+pyodbc
+matplotlib
+requests
+scikit-learn
+statsmodels
+joblib
